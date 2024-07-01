@@ -1,0 +1,127 @@
+openapi: 3.1.0
+info:
+  title: Alpha Vantage SMA Trending Analysis
+  description: This API returns and analyzes the simple moving average (SMA) values using OpenAI's GPT.
+  version: 1.0.0
+servers:
+  - url: https://www.alphavantage.co
+    description: Alpha Vantage API Server
+  - url: https://api.openai.com/v1
+    description: OpenAI API Server
+paths:
+  /query:
+    get:
+      operationId: getSMAData
+      summary: Retrieve the simple moving average (SMA) values.
+      parameters:
+        - name: function
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [SMA]
+          description: The technical indicator of your choice. In this case, function=SMA.
+        - name: symbol
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The name of the ticker of your choice. For example: symbol=IBM.
+        - name: interval
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [1min, 5min, 15min, 30min, 60min, daily, weekly, monthly]
+          description: Time interval between two consecutive data points in the time series.
+        - name: month
+          in: query
+          required: false
+          schema:
+            type: string
+            pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+          description: Applicable only to intraday intervals for the equity markets. Format: YYYY-MM.
+        - name: time_period
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Number of data points used to calculate each moving average value.
+        - name: series_type
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [close, open, high, low]
+          description: The desired price type in the time series.
+        - name: datatype
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [json, csv]
+            default: json
+          description: The format of the data returned. Default is json.
+        - name: apikey
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Your API key.
+      responses:
+        '200':
+          description: SMA values in JSON format
+          content:
+            application/json:
+              schema:
+                $ref: 'https://raw.githubusercontent.com/your-username/sma-schema-repo/main/sma-schema.json'
+            text/csv:
+              schema:
+                type: string
+                format: csv
+  /analyze:
+    post:
+      operationId: analyzeSMAData
+      summary: Analyze SMA data using GPT-3
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sma_data:
+                  type: object
+                  description: The SMA data to analyze
+                  example:
+                    {
+                      "Meta Data": {
+                        "1: Information": "Simple Moving Average (SMA)",
+                        "2: Symbol": "IBM",
+                        "3: Last Refreshed": "2024-06-30 20:00:00",
+                        "4: Interval": "weekly",
+                        "5: Time Period": 10,
+                        "6: Series Type": "open",
+                        "7: Time Zone": "US/Eastern"
+                      },
+                      "Technical Analysis: SMA": {
+                        "2024-06-30": {
+                          "SMA": "142.47"
+                        },
+                        "2024-06-23": {
+                          "SMA": "143.15"
+                        }
+                      }
+                    }
+      responses:
+        '200':
+          description: Analysis result from GPT-3
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  analysis:
+                    type: string
+                    description: The analysis of the SMA data
